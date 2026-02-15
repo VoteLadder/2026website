@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DenoiseVision - CXR Evaluation</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <div class="header-content">
+        <div class="logo-space"><img src="logo.png" alt="Logo" style="max-width: 100%; max-height: 100%;"></div>
+        <div class="georgetown-title">Georgetown Radiology</div>
+        <div class="denoise-title">DenoiseVision</div>
+        <div id="user-info" class="hidden"><i class="fas fa-user-circle"></i> <span id="user-initials"></span></div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Login Screen -->
+      <section id="login-screen" class="screen">
+        <div class="login-container">
+          <div class="card login-form">
+            <h2>Welcome to DenoiseVision</h2>
+            <form id="login-form">
+              <div class="form-group">
+                <label for="initials">Your Initials (3 letters):</label>
+                <input type="text" id="initials" maxlength="3" required>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="primary-button"><i class="fas fa-sign-in-alt"></i> Start Study</button>
+              </div>
+            </form>
+            <div style="margin-top: 20px; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
+              <p style="margin-bottom: 10px; font-size: 0.9rem; color: #666;">Having trouble? Clear all saved data:</p>
+              <button id="clear-all-data-btn" class="secondary-button">
+                <i class="fas fa-trash"></i> Clear All Data
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Instructions Screen -->
+      <section id="instructions-screen" class="screen hidden">
+        <div class="card">
+          <h2>Study Instructions</h2>
+          
+          <div class="instruction-section">
+            <h3><i class="fas fa-info-circle"></i> About This Study</h3>
+            <p>You'll be presented with 138 images, one at a time. Some images may appear multiple times.</p>
+          </div>
+          
+          <div class="instruction-section">
+            <h3><i class="fas fa-tasks"></i> Your Task</h3>
+            <ol>
+              <li>Rate the diagnostic quality of each image (1-5, with 5 being best)</li>
+              <li>Identify if the image is noisy, original, or denoised</li>
+              <li>Add optional comments if needed</li>
+            </ol>
+          </div>
+          
+          <div class="form-actions">
+            <button id="begin-study-btn" class="primary-button"><i class="fas fa-play"></i> Begin Evaluation</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Study Screen -->
+      <section id="study-screen" class="screen hidden">
+        <div class="card">
+          <div class="progress-indicator">
+            <div class="progress-bar">
+              <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+            </div>
+            <div id="progress-text" class="progress-text">Image 1 of 123</div>
+          </div>
+          
+          <div class="image-container">
+            <div id="loading-images" class="loading-images"><i class="fas fa-spinner"></i> Loading...</div>
+            
+            <div class="image-box">
+              <h3><i class="fas fa-image"></i> Image</h3>
+              <img id="current-image" src="" alt="Current image">
+            </div>
+          </div>
+          
+          <form id="rating-form" class="rating-form">
+            <div class="rating-section">
+              <h3><i class="fas fa-star-half-alt"></i> 1. Rate the diagnostic quality of this image:</h3>
+              <div class="quality-rating">
+                <label>
+                  <input type="radio" name="quality" value="1" required>
+                  Poor
+                </label>
+                <label>
+                  <input type="radio" name="quality" value="2">
+                  Fair
+                </label>
+                <label>
+                  <input type="radio" name="quality" value="3">
+                  Average
+                </label>
+                <label>
+                  <input type="radio" name="quality" value="4">
+                  Good
+                </label>
+                <label>
+                  <input type="radio" name="quality" value="5">
+                  Excellent
+                </label>
+              </div>
+            </div>
+            
+            <div class="rating-section">
+              <h3><i class="fas fa-tag"></i> 2. This image appears to be:</h3>
+              <div class="type-rating">
+                <label>
+                  <input type="radio" name="imageType" value="noisy" required>
+                  Noisy
+                </label>
+                
+                <label>
+                  <input type="radio" name="imageType" value="denoised">
+                  Denoised
+                </label>
+                
+                <label>
+                  <input type="radio" name="imageType" value="original">
+                  Original
+                </label>
+              </div>
+            </div>
+            
+            <div class="rating-section">
+              <h3><i class="fas fa-comment"></i> Comments: <textarea id="comments" rows="1" placeholder="Optional comments..."></textarea></h3>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" id="save-progress-btn" class="secondary-button">
+                <i class="fas fa-save"></i> Save Progress
+              </button>
+              <button type="submit" class="primary-button">
+                <i class="fas fa-arrow-right"></i> Save & Next
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Completion Screen -->
+      <section id="completion-screen" class="screen hidden">
+        <div class="card">
+          <h2><i class="fas fa-check-circle"></i> Study Complete!</h2>
+          <p>Thank you for participating in the CXR Denoising Evaluation Study.</p>
+          
+          <div class="results-summary">
+            <h3>Results Summary</h3>
+            
+            <div class="summary-stats">
+              <div class="stat-box">
+                <div id="total-images" class="stat-value">0</div>
+                <div class="stat-label">Images Evaluated</div>
+              </div>
+              
+              <div class="stat-box">
+                <div id="accuracy-rate" class="stat-value">0%</div>
+                <div class="stat-label">Accuracy</div>
+              </div>
+              
+              <div class="stat-box">
+                <div id="avg-noisy" class="stat-value">0.0</div>
+                <div class="stat-label">Avg. Noisy</div>
+              </div>
+              
+              <div class="stat-box">
+                <div id="avg-original" class="stat-value">0.0</div>
+                <div class="stat-label">Avg. Original</div>
+              </div>
+              
+              <div class="stat-box">
+                <div id="avg-denoised" class="stat-value">0.0</div>
+                <div class="stat-label">Avg. Denoised</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="completion-actions">
+            <button id="download-results-btn" class="primary-button">
+              <i class="fas fa-download"></i> Download CSV
+            </button>
+            
+            <button id="start-new-btn" class="secondary-button">
+              <i class="fas fa-redo"></i> New Session
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>DenoiseVision <span id="current-year"></span></p>
+    </footer>
+  </div>
+
+  <script src="image-list.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
